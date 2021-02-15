@@ -2,12 +2,13 @@ from aiogram import executor
 
 from loader import dp
 import middlewares, filters, handlers
-from utils.notify_admins import on_startup_notify
 
-async def on_startup(dispatcher):
-    # Уведомляет про запуск
-    await on_startup_notify(dispatcher)
+
+async def notify_admin():
+    from loader import bot
+    from data.config import admin
+    await bot.send_message(chat_id=admin, text='Бот перезапущен!')
 
 
 if __name__ == '__main__':
-    executor.start_polling(dp, on_startup=on_startup)
+    executor.start_polling(dp, on_startup=notify_admin)
