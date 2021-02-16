@@ -21,8 +21,8 @@ class User:
         sql = db.cursor()
         sql.execute('''SELECT COUNT() FROM ENGRUS''')
         end = sql.fetchone()[0]
-        sql.execute('''INSERT INTO Users VALUES (?, ?, ?, ?, ?, ?, ?, ?);''',
-                    (self.id, self.first_name, self.last_name, self, 1, 3, 0, 0, 0))
+        sql.execute('''INSERT INTO Users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);''',
+                    (self.id, self.first_name, self.last_name, self.username, 1, 3, 0, 0, 0))
         sql.execute(f'''CREATE TABLE IF NOT EXISTS [{self.id}] 
                         (Word_id INTEGER PRIMARY KEY ON CONFLICT REPLACE,
                         Notificated BOOLEAN);''')
@@ -54,16 +54,69 @@ class User:
 
     def get_time_to_send(self) -> str:
         time_to_send = time.gmtime(time.time() + (3600 * (self.time_zone + 1)))  # nearest hour
-        if self.sleep_from > self.sleep_to:  # from 21,22, or 23 to 6,7,8 or 9
-            if time_to_send.tm_hour in range(self.sleep_to + 1, self.sleep_from + 1):
-                return time.strftime("%H:00", time_to_send)
-            else:
-                return f'0{self.sleep_to}:00\nСпокойной ночи ✨'
-        else:  # for 00:00 to ...
-            if time_to_send.tm_hour not in range(self.sleep_from + 1, self.sleep_to + 1):
-                return time.strftime("%H:00", time_to_send)
-            else:
-                return f'0{self.sleep_to}:00\nСпокойной ночи ✨'
+        if self.period == 3600:
+            if self.sleep_from > self.sleep_to:  # from 21,22, or 23 to 6,7,8 or 9
+                if time_to_send.tm_hour in range(self.sleep_to + 1, self.sleep_from + 1):
+                    return time.strftime("%H:00", time_to_send)
+                else:
+                    return f'0{self.sleep_to}:00\nСпокойной ночи ✨'
+            else:  # for 00:00 to ...
+                if time_to_send.tm_hour not in range(self.sleep_from + 1, self.sleep_to + 1):
+                    return time.strftime("%H:00", time_to_send)
+                else:
+                    return f'0{self.sleep_to}:00\nСпокойной ночи ✨'
+        elif self.period == 7200:
+            hour_to_choice = time_to_send.tm_hour
+            while True:
+                if self.sleep_from > self.sleep_to:  # from 21,22, or 23 to 6,7,8 or 9
+                    if hour_to_choice in range(self.sleep_to + 1, self.sleep_from + 1):
+                        if (self.sleep_to - hour_to_choice) % 2 == 0:
+                            if hour_to_choice >= 10:
+                                return f'{hour_to_choice}:00'
+                            else:
+                                return f'0{hour_to_choice}:00'
+                        else:
+                            hour_to_choice += 1
+
+                    else:
+                        return f'0{self.sleep_to}:00\nСпокойной ночи ✨'
+                else:  # for 00:00 to ...
+                    if hour_to_choice not in range(self.sleep_from + 1, self.sleep_to + 1):
+                        if (self.sleep_to - hour_to_choice) % 2 == 0:
+                            if hour_to_choice >= 10:
+                                return f'{hour_to_choice}:00'
+                            else:
+                                return f'0{hour_to_choice}:00'
+                        else:
+                            hour_to_choice += 1
+                    else:
+                        return f'0{self.sleep_to}:00\nСпокойной ночи ✨'
+        elif self.period == 10800:
+            hour_to_choice = time_to_send.tm_hour
+            while True:
+                if self.sleep_from > self.sleep_to:  # from 21,22, or 23 to 6,7,8 or 9
+                    if hour_to_choice in range(self.sleep_to + 1, self.sleep_from + 1):
+                        if (self.sleep_to - hour_to_choice) % 3 == 0:
+                            if hour_to_choice >= 10:
+                                return f'{hour_to_choice}:00'
+                            else:
+                                return f'0{hour_to_choice}:00'
+                        else:
+                            hour_to_choice += 1
+
+                    else:
+                        return f'0{self.sleep_to}:00\nСпокойной ночи ✨'
+                else:  # for 00:00 to ...
+                    if hour_to_choice not in range(self.sleep_from + 1, self.sleep_to + 1):
+                        if (self.sleep_to - hour_to_choice) % 3 == 0:
+                            if hour_to_choice >= 10:
+                                return f'{hour_to_choice}:00'
+                            else:
+                                return f'0{hour_to_choice}:00'
+                        else:
+                            hour_to_choice += 1
+                    else:
+                        return f'0{self.sleep_to}:00\nСпокойной ночи ✨'
 
     def get_current_time(self):
         current_time = time.strftime("%H:%M", time.gmtime(time.time() + (self.time_zone * 3600)))

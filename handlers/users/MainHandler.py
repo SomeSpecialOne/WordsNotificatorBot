@@ -1,4 +1,3 @@
-import time
 from aiogram import types
 # from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import CommandStart
@@ -30,7 +29,7 @@ def get_users(database=db):
 users = {}
 
 
-@dp.message_handler(CommandStart(), state=None)
+@dp.message_handler(CommandStart(), state="*")
 async def bot_start(message: types.Message):
     global users
 
@@ -185,20 +184,33 @@ async def get_answer(call: types.CallbackQuery):
         await Menu.time_zone.set()
 
 
-@dp.message_handler(text='Изменить настройки ⚙', state=Menu.done)
+@dp.message_handler(text='Изменить настройки ⚙', state="*")
 async def get_answer(message: types.Message):
+    try:
+        user = users[message.from_user.id]
+    except KeyError:
+        get_users()
+        try:
+            user = users[message.from_user.id]
+        except KeyError:
+            await message.answer('Нажми /start')
+            return
     await message.answer('Выбери свой часовой пояс UTC', reply_markup=time_zone)
     await Menu.time_zone.set()
 
 
-@dp.message_handler(text='Остановить рассылку 🚫', state=Menu.done)
+@dp.message_handler(text='Остановить рассылку 🚫', state="*")
 async def get_answer(message: types.Message):
     global users
     try:
         user = users[message.from_user.id]
     except KeyError:
         get_users()
-        user = users[message.from_user.id]
+        try:
+            user = users[message.from_user.id]
+        except KeyError:
+            await message.answer('Нажми /start')
+            return
     user.off_on(0)
     await message.answer('😔', reply_markup=hide)
     await message.answer('Рассылка остановлена', reply_markup=sending_on)

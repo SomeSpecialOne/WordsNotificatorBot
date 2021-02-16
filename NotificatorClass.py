@@ -76,17 +76,18 @@ class Notificator:
                         [Sleep_to] FROM Users WHERE [Period] == {period};''')
         ans = sql.fetchall()
         self.users = []
-        for tup in ans:
-            sql.execute(f'''SELECT [Word_id] FROM [{tup[0]}] WHERE [Notificated] == 0
-                            ORDER BY random() LIMIT 1;''')
-            word_id = sql.fetchone()[0]
-            sql.execute(f'''SELECT [Word], [Translation], [ContextEN], [ContextRU] FROM ENGRUS WHERE [ID] == {word_id};''')
-            word_tup = sql.fetchone()
-            word = User.Word(word_id, word_tup[0], word_tup[1], word_tup[2], word_tup[3])
-            user = User(tup[0], tup[1], tup[2], tup[3], tup[4], period, word)
-            self.users.append(user)
-            sql.execute(f'''UPDATE [{tup[0]}] SET [Notificated] = 1 WHERE [Word_id] == {word_id};''')
-        db.commit()
+        if ans:
+            for tup in ans:
+                sql.execute(f'''SELECT [Word_id] FROM [{tup[0]}] WHERE [Notificated] == 0
+                                ORDER BY random() LIMIT 1;''')
+                word_id = sql.fetchone()[0]
+                sql.execute(f'''SELECT [Word], [Translation], [ContextEN], [ContextRU] FROM ENGRUS WHERE [ID] == {word_id};''')
+                word_tup = sql.fetchone()
+                word = User.Word(word_id, word_tup[0], word_tup[1], word_tup[2], word_tup[3])
+                user = User(tup[0], tup[1], tup[2], tup[3], tup[4], period, word)
+                self.users.append(user)
+                sql.execute(f'''UPDATE [{tup[0]}] SET [Notificated] = 1 WHERE [Word_id] == {word_id};''')
+            db.commit()
         sql.close()
 
     async def start(self):
@@ -98,55 +99,73 @@ class Notificator:
             if user.period == 3600:
                 if self.time_check(user) is True:
                     if current_hour == user.sleep_from:
-                        # await bot.send_sticker(chat_id=user.id, sticker=random.choice(stickers_good_night))
-                        self.testing('send sticker night', user)
+                        try:
+                            await bot.send_sticker(chat_id=user.id, sticker=random.choice(stickers_good_night))
+                        except Exception as e:
+                            self.logging(e, user)
                     elif current_hour == user.sleep_to:
-                        # await bot.send_sticker(chat_id=user.id, sticker=random.choice(stickers_good_morning))
-                        self.testing('send sticker morning', user)
+                        try:
+                            await bot.send_sticker(chat_id=user.id, sticker=random.choice(stickers_good_morning))
+                        except Exception as e:
+                            self.logging(e, user)
                     msg_word = f'<b>{user.word.word}</b> 🇬🇧 - <b>{user.word.translation}</b> 🇷🇺'
                     msg_context = f'{user.word.context_en} 🇬🇧\n' \
                                   f'{user.word.context_ru} 🇷🇺'
                     msg_context = msg_context.replace(user.word.word, f'<b>{user.word.word}</b>')\
                         .replace(user.word.translation, f'<b>{user.word.translation}</b>')
-                    # await bot.send_message(chat_id=user.id, text=msg_word, parse_mode='HTML')
-                    # await bot.send_message(chat_id=user.id, text=msg_context, parse_mode='HTML')
-                    self.testing('send word', user)
+                    try:
+                        await bot.send_message(chat_id=user.id, text=msg_word, parse_mode='HTML')
+                        await bot.send_message(chat_id=user.id, text=msg_context, parse_mode='HTML')
+                    except Exception as e:
+                        self.logging(e, user)
 
             elif user.period == 7200:
                 if self.time_check(user) is True:
                     if (user.sleep_to - current_hour) % 2 == 0:
                         if current_hour == user.sleep_from:
-                            # await bot.send_sticker(chat_id=user.id, sticker=random.choice(stickers_good_night))
-                            self.testing('send sticker night', user)
+                            try:
+                                await bot.send_sticker(chat_id=user.id, sticker=random.choice(stickers_good_night))
+                            except Exception as e:
+                                self.logging(e, user)
                         elif current_hour == user.sleep_to:
-                            # await bot.send_sticker(chat_id=user.id, sticker=random.choice(stickers_good_morning))
-                            self.testing('send sticker morning', user)
+                            try:
+                                await bot.send_sticker(chat_id=user.id, sticker=random.choice(stickers_good_morning))
+                            except Exception as e:
+                                self.logging(e, user)
                         msg_word = f'<b>{user.word.word}</b> 🇬🇧 - <b>{user.word.translation}</b> 🇷🇺'
                         msg_context = f'{user.word.context_en} 🇬🇧\n' \
                                       f'{user.word.context_ru} 🇷🇺'
                         msg_context = msg_context.replace(user.word.word, f'<b>{user.word.word}</b>') \
                             .replace(user.word.translation, f'<b>{user.word.translation}</b>')
-                        # await bot.send_message(chat_id=user.id, text=msg_word, parse_mode='HTML')
-                        # await bot.send_message(chat_id=user.id, text=msg_context, parse_mode='HTML')
-                        self.testing('send word', user)
+                        try:
+                            await bot.send_message(chat_id=user.id, text=msg_word, parse_mode='HTML')
+                            await bot.send_message(chat_id=user.id, text=msg_context, parse_mode='HTML')
+                        except Exception as e:
+                            self.logging(e, user)
 
             elif user.period == 10800:
                 if self.time_check(user) is True:
                     if (user.sleep_to - current_hour) % 3 == 0:
                         if current_hour == user.sleep_from:
-                            # await bot.send_sticker(chat_id=user.id, sticker=random.choice(stickers_good_night))
-                            self.testing('send sticker night', user)
+                            try:
+                                await bot.send_sticker(chat_id=user.id, sticker=random.choice(stickers_good_night))
+                            except Exception as e:
+                                self.logging(e, user)
                         elif current_hour == user.sleep_to:
-                            # await bot.send_sticker(chat_id=user.id, sticker=random.choice(stickers_good_morning))
-                            self.testing('send sticker morning', user)
+                            try:
+                                await bot.send_sticker(chat_id=user.id, sticker=random.choice(stickers_good_morning))
+                            except Exception as e:
+                                self.logging(e, user)
                         msg_word = f'<b>{user.word.word}</b> 🇬🇧 - <b>{user.word.translation}</b> 🇷🇺'
                         msg_context = f'{user.word.context_en} 🇬🇧\n' \
                                       f'{user.word.context_ru} 🇷🇺'
                         msg_context = msg_context.replace(user.word.word, f'<b>{user.word.word}</b>') \
                             .replace(user.word.translation, f'<b>{user.word.translation}</b>')
-                        # await bot.send_message(chat_id=user.id, text=msg_word, parse_mode='HTML')
-                        # await bot.send_message(chat_id=user.id, text=msg_context, parse_mode='HTML')
-                        self.testing('send word', user)
+                        try:
+                            await bot.send_message(chat_id=user.id, text=msg_word, parse_mode='HTML')
+                            await bot.send_message(chat_id=user.id, text=msg_context, parse_mode='HTML')
+                        except Exception as e:
+                            self.logging(e, user)
 
     @staticmethod
     def time_check(user: User) -> bool:
@@ -166,7 +185,7 @@ class Notificator:
                 return False
 
     @staticmethod
-    def testing(text: str, user: User):
+    def logging(text: Exception, user: User):
         with open('logs.txt', 'a') as logs:
             logs.write(f'[{time.strftime("%H:%M", time.gmtime(time.time() + (3600 * 3)))}] {text} for {user.first_name} [{user.sleep_from}-{user.sleep_to}, {user.period}]\n')
 
